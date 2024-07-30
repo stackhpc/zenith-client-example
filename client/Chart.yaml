@@ -1,0 +1,5 @@
+apiVersion: v2
+name: zenith-client
+description: Deploys an echo server with a Zenith client.
+type: application
+version: 0.1.0

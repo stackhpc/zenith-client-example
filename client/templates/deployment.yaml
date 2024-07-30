@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "zenith-client.fullname" . }}
+  labels: {{ include "zenith-client.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels: {{ include "zenith-client.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels: {{ include "zenith-client.labels" . | nindent 8 }}
+      annotations:
+        zenith.stackhpc.com/config-checksum: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+    spec:
+      securityContext: {{ toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: app
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          securityContext: {{ toYaml .Values.securityContext | nindent 12 }}
+          resources: {{ toYaml .Values.resources | nindent 12 }}
+        - name: zenith-client
+          image: "{{ .Values.zenithClient.image.repository }}:{{ .Values.zenithClient.image.tag }}"
+          imagePullPolicy: {{ .Values.zenithClient.image.pullPolicy }}
+          env:
+            - name: ZENITH_CLIENT__SSH_IDENTITY_PATH
+              value: /etc/zenith/ssh_key
+          securityContext: {{ toYaml .Values.securityContext | nindent 12 }}
+          resources: {{ toYaml .Values.zenithClient.resources | nindent 12 }}   
+          volumeMounts:
+            - name: etc-zenith
+              readOnly: true
+              mountPath: /etc/zenith
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: etc-zenith
+          secret:
+            secretName: {{ include "zenith-client.fullname" . }}
+        - name: tmp
+          emptyDir: {}
+      {{- with .Values.nodeSelector }}
+      nodeSelector: {{ toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity: {{ toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations: {{ toYaml . | nindent 8 }}
+      {{- end }}

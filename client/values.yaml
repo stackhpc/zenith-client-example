@@ -1,0 +1,41 @@
+# The image for the app
+image:
+  repository: jmalloc/echo-server
+  tag: v0.3.7
+  pullPolicy: IfNotPresent
+
+zenithClient:
+  sshKey:
+    public:
+    private:
+  config:
+    debug: true
+    registrarUrl: '{{ fail "registrar URL is required" }}'
+    token: '{{ fail "token is required" }}'
+    serverAddress: '{{ fail "server address is required" }}'
+    # authOidcIssuer:
+    # authOidcClientId:
+    # authOidcClientSecret:
+  image:
+    repository: ghcr.io/stackhpc/zenith-client
+    tag: 0.10.1
+    pullPolicy: IfNotPresent
+  resources: {}
+
+replicaCount: 1
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1001
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop: [ALL]
+  readOnlyRootFilesystem: true
+
+resources: {}
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

@@ -1,0 +1,53 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ include "zenith-client.fullname" . }}-init
+  labels: {{ include "zenith-client.labels" . | nindent 4 }}
+  annotations:
+    helm.sh/hook: pre-install,pre-upgrade
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+stringData:  {{ include "zenith-client.config" . | nindent 2 }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "zenith-client.fullname" . }}-init
+  labels: {{ include "zenith-client.labels" . | nindent 4 }}
+  annotations:
+    helm.sh/hook: pre-install,pre-upgrade
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      securityContext: {{ toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: zenith-client
+          image: "{{ .Values.zenithClient.image.repository }}:{{ .Values.zenithClient.image.tag }}"
+          imagePullPolicy: {{ .Values.zenithClient.image.pullPolicy }}
+          args:
+            - bash
+            - -c
+            - "zenith-client init || true"
+          env:
+            - name: ZENITH_CLIENT__SSH_IDENTITY_PATH
+              value: /etc/zenith/ssh_key
+          securityContext: {{ toYaml .Values.securityContext | nindent 12 }}
+          resources: {{ toYaml .Values.zenithClient.resources | nindent 12 }}   
+          volumeMounts:
+            - name: etc-zenith
+              readOnly: true
+              mountPath: /etc/zenith
+      volumes:
+        - name: etc-zenith
+          secret:
+            secretName: {{ include "zenith-client.fullname" . }}-init
+      {{- with .Values.nodeSelector }}
+      nodeSelector: {{ toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity: {{ toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations: {{ toYaml . | nindent 8 }}
+      {{- end }}
