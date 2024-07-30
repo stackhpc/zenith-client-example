@@ -1,7 +1,8 @@
 # zenith-client-example
 
 This repository contains manifests and configuration for setting up a Zenith server on a
-Kubernetes cluster and an example Zenith client that forwards traffic to an echo server.
+Kubernetes cluster and an example Zenith client that forwards traffic that comes down the
+tunnel to an echo server, allowing the headers sent by Zenith to be inspected.
 
 The server and client should be deployed on different Kubernetes clusters in order to properly
 demonstrate the briding of NAT and/or firewalls. The cluster that the client is deployed on
