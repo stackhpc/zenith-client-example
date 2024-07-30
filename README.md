@@ -5,7 +5,7 @@ Kubernetes cluster and an example Zenith client that forwards traffic that comes
 tunnel to an echo server, allowing the headers sent by Zenith to be inspected.
 
 The server and client should be deployed on different Kubernetes clusters in order to properly
-demonstrate the briding of NAT and/or firewalls. The cluster that the client is deployed on
+demonstrate the traversal of NAT and/or firewalls. The cluster that the client is deployed on
 does not need egress from the internet, however it must be able to pull the required images
 and to reach the SSHD server that is part of the Zenith server.
 
